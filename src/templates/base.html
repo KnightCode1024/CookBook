@@ -11,7 +11,7 @@
     <header class="sticky-top border-bottom">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
            <div class="container">
-                <a href="{{ url_for('index') }}" class="navbar-brand fw-bold">Книга рецептов</a>
+                <a href="{{ url_for('recipes.index') }}" class="navbar-brand fw-bold">Книга рецептов</a>
                 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -19,16 +19,20 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a href="{{ url_for('index') }}" class="nav-link">Главная</a>
+                            <a href="{{ url_for('recipes.index') }}" class="nav-link">Главная</a>
                         </li>
                         {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                             <a href="#" class="nav-link">Добавить рецепт</a>
+                             <a href="{{ url_for('recipes.add_recipe') }}" class="nav-link">Добавить рецепт</a>
+                        </li>
+                        <li class="nav-item">
+                             <a href="{{ url_for('recipes.my_recipes') }}" class="nav-link">Мои рецепты</a>
                         </li>
                         {% endif %}
                     </ul>
-                    <form class="d-flex me-3" action="#">
-                        <input class="form-control me-2" type="search" placeholder="Поиск" aria-label="Search">
+                    <form class="d-flex me-3" action="{{ url_for('recipes.index') }}" method="get">
+                        <input class="form-control me-2" type="search" placeholder="Поиск рецептов" 
+                               name="search" value="{{ request.args.get('search', '') }}">
                         <button class="btn btn-outline-primary" type="submit">Найти</button>
                     </form>                   
                     <ul class="navbar-nav">
@@ -38,8 +42,7 @@
                                 {{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Мой профиль</a></li>
-                                <li><a class="dropdown-item" href="#">Мои рецепты</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('recipes.my_recipes') }}">Мои рецепты</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{{ url_for('users.logout') }}">Выход</a></li>
                             </ul>
@@ -59,7 +62,20 @@
     </header>
     
     <main>
-        {% block content %}{% endblock %}
+        <div class="container mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
     </main>
     
     <footer class="bg-light text-center border-top mt-5 py-3">

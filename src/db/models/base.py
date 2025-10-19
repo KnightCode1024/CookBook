@@ -10,19 +10,19 @@ class BaseModel(db.Model):
     __abstract__ = True
 
     id = db.Column(
-        db.Integer, 
-        primary_key=True, 
+        db.Integer,
+        primary_key=True,
         autoincrement=True,
-        )
+    )
     created_at = db.Column(
         db.DateTime,
         server_default=func.now(),
-        )
+    )
     updated_at = db.Column(
         db.DateTime,
         server_default=func.now(),
         onupdate=func.now(),
-        )
+    )
 
     @declared_attr
     def __tablename__(cls) -> str:

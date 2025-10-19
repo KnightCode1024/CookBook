@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Мои рецепты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Мои рецепты</h1>
+                <a href="{{ url_for('recipes.add_recipe') }}" class="btn btn-primary">
+                    + Добавить рецепт
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for recipe in recipes %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="position-relative">
+                    {% if recipe.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + recipe.image_filename) }}" 
+                         class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Нет+фото" 
+                         class="card-img-top" alt="Нет фото" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    
+                    {% if current_user.id == recipe.user_id %}
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                ⋮
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form method="POST" action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}" 
+                                          onsubmit="return confirm('Вы уверены, что хотите удалить рецепт \"{{ recipe.title }}\"?');">
+                                        <button type="submit" class="dropdown-item text-danger">Удалить</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ recipe.title }}</h5>
+                    {% if recipe.description %}
+                    <p class="card-text text-muted flex-grow-1">{{ recipe.description|truncate(100) }}</p>
+                    {% endif %}
+                    <div class="mt-auto">
+                        <small class="text-muted">Добавлено: {{ recipe.created_at.strftime('%d.%m.%Y') }}</small>
+                        <div class="d-grid gap-2 mt-2">
+                            <a href="{{ url_for('recipes.recipe_detail', recipe_id=recipe.id) }}" 
+                               class="btn btn-outline-primary btn-sm">Смотреть рецепт</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <h4 class="text-muted mb-3">У вас пока нет рецептов</h4>
+                <p class="text-muted mb-4">Добавьте свой первый рецепт и поделитесь им с другими!</p>
+                <a href="{{ url_for('recipes.add_recipe') }}" class="btn btn-primary btn-lg">Добавить первый рецепт</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination and pagination.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('recipes.my_recipes', page=pagination.prev_num) }}">Назад</a>
+            </li>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages() %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('recipes.my_recipes', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('recipes.my_recipes', page=pagination.next_num) }}">Вперед</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -5,8 +5,9 @@ from flask_sqlalchemy.model import Model
 
 T = TypeVar("T", bound=Model)
 
+
 class BaseRepository:
-    def __init__(self,db: SQLAlchemy ,model: Type[T]):
+    def __init__(self, db: SQLAlchemy, model: Type[T]):
         self.db = db
         self.model = model
 
@@ -15,12 +16,12 @@ class BaseRepository:
 
     def get_all(self):
         return self.db.session.query(self.model).all()
-    
+
     def create(self, **kwargs):
-        isinstance = self.model(**kwargs)
+        instance = self.model(**kwargs)
         self.db.session.add(instance)
         self.db.session.commit()
-        return isinstance
+        return instance
 
     def update(self, id: int, **kwargs):
         isinstance = self.get_by_id(id)

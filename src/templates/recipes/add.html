@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Добавление рецепта{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h4 class="card-title mb-0 text-center">Добавление рецепта</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label fw-semibold") }}
+                            {{ form.title(class="form-control form-control-lg") }}
+                            {% for error in form.title.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-semibold") }}
+                            {{ form.description(class="form-control", rows="3", placeholder="Краткое описание блюда...") }}
+                            {% for error in form.description.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.ingredients.label(class="form-label fw-semibold") }}
+                            {{ form.ingredients(class="form-control", rows="5", placeholder="• 500г мяса&#10;• 2 луковицы&#10;• 1 морковь&#10;• Соль, перец по вкусу") }}
+                            {% for error in form.ingredients.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.instructions.label(class="form-label fw-semibold") }}
+                            {{ form.instructions(class="form-control", rows="7", placeholder="1. Подготовить все ингредиенты...&#10;2. Нарезать мясо кубиками...&#10;3. Обжарить лук и морковь...") }}
+                            {% for error in form.instructions.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.image.label(class="form-label fw-semibold") }}
+                            {{ form.image(class="form-control") }}
+                            {% for error in form.image.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Поддерживаются форматы: JPG, PNG, GIF</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg py-2") }}
+                            <a href="{{ url_for('recipes.index') }}" class="btn btn-outline-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
