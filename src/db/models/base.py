@@ -9,18 +9,20 @@ from db.database import db
 class BaseModel(db.Model):
     __abstract__ = True
 
-    id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
+    id = db.Column(
+        db.Integer, 
+        primary_key=True, 
         autoincrement=True,
-    )
-    created_at: Mapped[datetime] = mapped_column(
+        )
+    created_at = db.Column(
+        db.DateTime,
         server_default=func.now(),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
+        )
+    updated_at = db.Column(
+        db.DateTime,
         server_default=func.now(),
         onupdate=func.now(),
-    )
+        )
 
     @declared_attr
     def __tablename__(cls) -> str:

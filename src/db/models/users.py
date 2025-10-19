@@ -1,26 +1,27 @@
 import re
 
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy.orm import validates
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.models.base import BaseModel
+from db.database import db
 
 
 class User(UserMixin, BaseModel):
-    username: Mapped[str] = mapped_column(
-        String(64),
+    username = db.Column(
+        db.String(64),
         unique=True,
         nullable=False,
     )
-    email: Mapped[str] = mapped_column(
-        String(128),
+    email = db.Column(
+        db.String(128),
         unique=True,
         nullable=False,
     )
-    password_hash: Mapped[str] = mapped_column(
-        String(256),
+    password_hash = db.Column(
+        db.String(256),
         nullable=False,
     )
 

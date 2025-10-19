@@ -1,14 +1,15 @@
+# routes/users.py
 from http import HTTPStatus as status
-
 from flask_login import login_user, logout_user, login_required, current_user
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from urllib.parse import urlparse, urljoin
 
-from db.models.users import User
-from db.database import db
+from services.user import UserService
 from forms.users import LoginForm, RegisterForm
 
 users_bp = Blueprint("users", __name__)
+
+user_service = UserService()  
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -22,9 +23,12 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = user_service.authenticate_user(
+            email=form.email.data, 
+            password=form.password.data
+        )
         
-        if user and user.check_password(form.password.data):
+        if user:
             login_user(user)
             flash('Вы успешно вошли!', 'success')
             
@@ -44,25 +48,17 @@ def register():
     
     form = RegisterForm()
     if form.validate_on_submit():
-        if User.query.filter_by(email=form.email.data).first():
-            flash('Пользователь с таким email уже существует', 'error')
-            return render_template('users/register.html', form=form)  # Исправлен путь
-        
-        if User.query.filter_by(username=form.username.data).first():
-            flash('Пользователь с таким именем уже существует', 'error')
-            return render_template('users/register.html', form=form)  # Исправлен путь
-        
-        user = User(
+        user, message = user_service.register_user(
             username=form.username.data,
-            email=form.email.data
+            email=form.email.data,
+            password=form.password.data
         )
-        user.set_password(form.password.data)
         
-        db.session.add(user)
-        db.session.commit()
-        
-        flash('Регистрация прошла успешно! Теперь вы можете войти.', 'success')
-        return redirect(url_for('users.login')) 
+        if user:
+            flash('Регистрация прошла успешно! Теперь вы можете войти.', 'success')
+            return redirect(url_for('users.login'))
+        else:
+            flash(message, 'error')
     
     return render_template('users/register.html', form=form)
 
