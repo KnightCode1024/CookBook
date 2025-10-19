@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from urllib.parse import urlparse, urljoin
 
-from services.user import UserService
+from services.users import UserService
 from forms.users import LoginForm, RegisterForm
 
 users_bp = Blueprint("users", __name__)
