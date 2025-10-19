@@ -10,7 +10,7 @@ from flask import (
 from flask_login import login_required, current_user
 
 from services.recipes import RecipeService
-from forms.recipes import RecipeForm
+from forms.recipes import RecipeForm, EditRecipeForm
 
 recipes_bp = Blueprint("recipes", __name__)
 recipe_service = RecipeService()
@@ -84,14 +84,65 @@ def my_recipes():
 @login_required
 def delete_recipe(recipe_id):
     try:
-        # Проверяем, принадлежит ли рецепт пользователю
         if recipe_service.can_user_delete_recipe(recipe_id, current_user.id):
             recipe_service.delete_recipe(recipe_id, current_user.id)
             flash("Рецепт успешно удален", "success")
         else:
             flash("Вы не можете удалить этот рецепт", "error")
     except Exception as e:
-        current_app.logger.error(f"Error deleting recipe: {str(e)}")
         flash("Ошибка при удалении рецепта", "error")
 
     return redirect(url_for("recipes.my_recipes"))
+
+
+@recipes_bp.route("/recipe/<int:recipe_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_recipe(recipe_id):
+    if not recipe_service.can_user_edit_recipe(recipe_id, current_user.id):
+        flash("Вы не можете редактировать этот рецепт", "error")
+        return redirect(url_for("recipes.index"))
+
+    recipe = recipe_service.get_recipe_for_edit(recipe_id, current_user.id)
+    if not recipe:
+        flash("Рецепт не найден", "error")
+        return redirect(url_for("recipes.index"))
+
+    form = EditRecipeForm()
+
+    if request.method == "GET":
+        form.title.data = recipe.title
+        form.description.data = recipe.description
+        form.ingredients.data = recipe.ingredients
+        form.instructions.data = recipe.instructions
+
+    if form.validate_on_submit():
+        try:
+            remove_image = "remove_image" in request.form
+
+            image_file = None
+            if remove_image:
+                image_file = "remove"
+            elif form.image.data and form.image.data.filename:
+                image_file = form.image.data
+
+            updated_recipe = recipe_service.update_recipe(
+                recipe_id=recipe_id,
+                user_id=current_user.id,
+                title=form.title.data,
+                description=form.description.data,
+                ingredients=form.ingredients.data,
+                instructions=form.instructions.data,
+                image_file=image_file,
+            )
+
+            if updated_recipe:
+                flash("Рецепт успешно обновлен!", "success")
+                return redirect(url_for("recipes.recipe_detail", recipe_id=recipe_id))
+            else:
+                flash("Ошибка при обновлении рецепта", "error")
+
+        except Exception as e:
+            current_app.logger.error(f"Error updating recipe: {str(e)}")
+            flash("Ошибка при обновлении рецепта", "error")
+
+    return render_template("recipes/edit.html", form=form, recipe=recipe)

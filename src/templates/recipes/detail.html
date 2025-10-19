@@ -22,6 +22,12 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
+                                <a class="dropdown-item" href="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}">
+                                    Редактировать
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <form method="POST" action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}" 
                                       class="d-inline" onsubmit="return confirm('Вы уверены, что хотите удалить этот рецепт?');">
                                     <button type="submit" class="dropdown-item text-danger">Удалить рецепт</button>
@@ -31,7 +37,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 {% if recipe.description %}
                 <p class="lead text-muted">{{ recipe.description }}</p>
                 {% endif %}
@@ -63,6 +69,10 @@
                 
                 <div class="mt-4 pt-4 border-top">
                     <a href="{{ url_for('recipes.index') }}" class="btn btn-outline-secondary">← Назад к рецептам</a>
+                    {% if current_user.is_authenticated and current_user.id == recipe.user_id %}
+                    <a href="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}" 
+                       class="btn btn-primary ms-2">Редактировать рецепт</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

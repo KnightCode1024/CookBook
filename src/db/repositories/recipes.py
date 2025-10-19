@@ -67,3 +67,52 @@ class RecipeRepository(BaseRepository):
         return self.db.session.query(
             self.model.query.filter_by(id=recipe_id, user_id=user_id).exists()
         ).scalar()
+
+    def update_recipe(self, recipe_id, user_id, **kwargs):
+        recipe = (
+            self.db.session.query(self.model)
+            .filter_by(id=recipe_id, user_id=user_id)
+            .first()
+        )
+
+        if recipe:
+            for key, value in kwargs.items():
+                if value is not None:
+                    setattr(recipe, key, value)
+            self.db.session.commit()
+            return recipe
+        return None
+
+    def update_recipe_with_image(self, recipe_id, user_id, image_file=None, **kwargs):
+        recipe = (
+            self.db.session.query(self.model)
+            .filter_by(id=recipe_id, user_id=user_id)
+            .first()
+        )
+
+        if not recipe:
+            return None
+
+        if image_file and image_file.filename:
+            import os
+            from werkzeug.utils import secure_filename
+
+            if recipe.image_filename:
+                old_image_path = os.path.join(
+                    "static", "uploads", recipe.image_filename
+                )
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+
+            filename = secure_filename(image_file.filename)
+            image_filename = f"{user_id}_{filename}"
+            upload_path = os.path.join("static", "uploads", image_filename)
+            image_file.save(upload_path)
+            kwargs["image_filename"] = image_filename
+
+        for key, value in kwargs.items():
+            if value is not None and key != "image_file":
+                setattr(recipe, key, value)
+
+        self.db.session.commit()
+        return recipe

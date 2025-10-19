@@ -69,3 +69,56 @@ class RecipeService:
 
     def can_user_delete_recipe(self, recipe_id, user_id):
         return self.recipe_repo.user_owns_recipe(recipe_id, user_id)
+
+    def update_recipe(
+        self,
+        recipe_id,
+        user_id,
+        title=None,
+        description=None,
+        ingredients=None,
+        instructions=None,
+        image_file=None,
+    ):
+        try:
+            update_data = {
+                "title": title,
+                "description": description,
+                "ingredients": ingredients,
+                "instructions": instructions,
+            }
+
+            update_data = {k: v for k, v in update_data.items() if v is not None}
+
+            if image_file == "remove":
+                import os
+
+                recipe = self.recipe_repo.get_by_id(recipe_id)
+                if recipe and recipe.image_filename:
+                    old_image_path = os.path.join(
+                        "static", "uploads", recipe.image_filename
+                    )
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
+                    update_data["image_filename"] = None
+                return self.recipe_repo.update_recipe(recipe_id, user_id, **update_data)
+
+            elif image_file:
+                return self.recipe_repo.update_recipe_with_image(
+                    recipe_id, user_id, image_file, **update_data
+                )
+            else:
+                return self.recipe_repo.update_recipe(recipe_id, user_id, **update_data)
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    def can_user_edit_recipe(self, recipe_id, user_id):
+        return self.recipe_repo.user_owns_recipe(recipe_id, user_id)
+
+    def get_recipe_for_edit(self, recipe_id, user_id):
+        recipe = self.recipe_repo.get_by_id(recipe_id)
+        if recipe and recipe.user_id == user_id:
+            return recipe
+        return None
